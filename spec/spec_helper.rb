@@ -1,4 +1,5 @@
 require 'bundler/setup'
+require 'rack/test'
 require 'rack/cname_request'
 
 RSpec.configure do |config|
