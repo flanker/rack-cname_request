@@ -24,7 +24,12 @@ RSpec.describe Rack::CnameRequest do
       end
       map('/redirect_with_path_and_original_host') do
         run proc { |env|
-          [301, {'Content-Type' => 'text/html', 'Location' => 'http://cname.server.com/path'}, ['redirecting']]
+          [301, {'Content-Type' => 'text/html', 'Location' => 'http://cname.server.com/path?a=1&b=2'}, ['redirecting']]
+        }
+      end
+      map('/redirect_with_path_with_non_ascii_params') do
+        run proc { |env|
+          [301, {'Content-Type' => 'text/html', 'Location' => 'http://cname.server.com/path?name=安娜&b=2'}, ['redirecting']]
         }
       end
     end
@@ -39,7 +44,7 @@ RSpec.describe Rack::CnameRequest do
 
   it 'does not modify redirection location if request not sent from cname proxy' do
     get '/redirect_with_path_and_original_host'
-    expect(last_response.headers['Location']).to eq('http://cname.server.com/path')
+    expect(last_response.headers['Location']).to eq('http://cname.server.com/path?a=1&b=2')
   end
 
   it 'does not modify redirection location if location is not in the white list' do
@@ -51,7 +56,12 @@ RSpec.describe Rack::CnameRequest do
   it 'modifies redirection location if request sent from cname proxy and matches white list' do
     header 'CNAME_FROM', 'xyz.custom.com'
     get '/redirect_with_path_and_original_host'
-    expect(last_response.headers['Location']).to eq('http://xyz.custom.com/path')
+    expect(last_response.headers['Location']).to eq('http://xyz.custom.com/path?a=1&b=2')
+  end
+
+  it 'handles non-ascii url' do
+    get '/redirect_with_path_with_non_ascii_params'
+    expect(last_response.headers['Location']).to eq('http://cname.server.com/path?name=安娜&b=2')
   end
 
 end

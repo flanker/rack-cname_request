@@ -29,7 +29,7 @@ module Rack
     attr_reader :location_uri, :cname_header_value, :host_whitelist
 
     def initialize(location, cname_header_value, host_whitelist: [])
-      @location_uri = URI(location) if location
+      @location_uri = URI(URI.escape(location)) if location
       @cname_header_value = cname_header_value
       @host_whitelist = host_whitelist || []
     end
